@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>其他 - 我的个人博客</title>
+    <link rel="icon" href="logo.ico" type="image/x-icon">
+    <style>
+        /* ========== 基础变量（与主站完全一致） ========== */
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --link-color: #0066cc;
+            --link-hover: #0052a3;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --tag-bg: #f0f0f0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --link-color: #66b3ff;
+            --link-hover: #99ccff;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --tag-bg: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 主要内容区域自动撑开 */
+        main {
+            flex: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--link-color);
+        }
+
+        .nav-links a.active {
+            color: var(--link-color);
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        /* 页面标题区 */
+        .page-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* 卡片网格布局（用于展示链接/项目） */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        /* 单个链接卡片 */
+        .link-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: var(--text-color);
+            display: block;
+        }
+
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow);
+            border-color: var(--link-color);
+        }
+
+        /* 卡片图标 */
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        /* 卡片标题 */
+        .link-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        /* 卡片描述 */
+        .link-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* 可选的标签样式（用于标记类型） */
+        .card-tag {
+            display: inline-block;
+            margin-top: 12px;
+            background-color: var(--tag-bg);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+            .links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ==================== 导航栏 ==================== -->
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Kaylin博客</a>
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="articles.html">文章列表</a>
+                <a href="tools.html">工具</a>
+                <a href="about.html">关于我</a>
+                <a href="other.html" class="active">其他</a>   <!-- 当前页面高亮 -->
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== 主要内容 ==================== -->
+    <main>
+        <div class="page-header">
+            <h1>📌 其他推荐</h1>
+            <p>一些有趣的项目、实用网站或外部资源，点击卡片即可跳转。</p>
+        </div>
+
+        <!-- 
+            ========================================================
+            可配置链接卡片区域
+            每个 .link-card 代表一个跳转项。
+            您可以根据需要增删卡片，修改 href、图标、标题、描述等。
+            所有卡片样式与博客主题保持一致，支持暗色模式。
+            ========================================================
+        -->
+        <div class="links-grid">
+            <!-- 示例卡片 1 - 外部工具网站 -->
+            <a href="https://github.com" class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🐙</div>
+                <h3>GitHub 开源社区</h3>
+                <p>全球最大的代码托管平台，探索开源项目，学习优秀代码。</p>
+                <span class="card-tag">开发资源</span>
+            </a>
+
+            <!-- 示例卡片 2 - 学习资源 -->
+            <a href="https://developer.mozilla.org/zh-CN/" class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">📘</div>
+                <h3>MDN Web Docs</h3>
+                <p>最权威的 Web 技术文档，包含 HTML、CSS、JavaScript 详尽教程。</p>
+                <span class="card-tag">学习文档</span>
+            </a>
+
+            <!-- 示例卡片 3 - 个人项目占位（可替换为您的项目） -->
+            <a href="#" class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">🛠️</div>
+                <h3>待替换项目 A</h3>
+                <p>这里可以放您自己的一个小工具、演示页面或博客系列。</p>
+                <span class="card-tag">个人项目</span>
+            </a>
+
+            <!-- 示例卡片 4 - 另一个占位 -->
+            <a href="#" class="link-card" target="_blank" rel="noopener noreferrer">
+                <div class="card-icon">✨</div>
+                <h3>待替换项目 B</h3>
+                <p>可以是任意外部链接或站内页面，修改 href 即可。</p>
+                <span class="card-tag">实验性</span>
+            </a>
+
+            <!-- 
+                ========== 添加新卡片的方法 ==========
+                1. 复制上面任意一个 <a class="link-card"> 块
+                2. 修改 href 为实际链接（站内或站外）
+                3. 修改图标（emoji）、标题和描述
+                4. 可选修改 .card-tag 文字
+                5. 如果不需要新窗口打开，可以删除 target="_blank" rel="noopener noreferrer"
+            -->
+        </div>
+
+        <!-- 额外说明区域（可选，可根据需要删除） -->
+        <div style="margin-top: 40px; padding: 20px; background-color: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                💡 提示：以上卡片内容均可自由替换，您可以直接编辑 HTML 中的链接、标题和描述。<br>
+                如需增加更多卡片，请复制上方 <code style="background: var(--tag-bg); padding: 2px 6px; border-radius: 6px;">.link-card</code> 结构。
+            </p>
+        </div>
+    </main>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer>
+        <p>&copy; 2026 Kaylin Cloudink. 保留所有权利. 网站使用AI编写</p>
+    </footer>
+
+    <!-- ==================== 主题切换脚本（与全站一致） ==================== -->
+    <script>
+        // 获取当前主题
+        function getCurrentTheme() {
+            return localStorage.getItem('theme') || 'light';
+        }
+
+        // 设置主题
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            const currentTheme = getCurrentTheme();
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = getCurrentTheme();
+            setTheme(savedTheme);
+        });
+    </script>
+</body>
+</html>
