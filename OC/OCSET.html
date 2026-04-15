@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>OC设定集 - 我的原创角色</title>
+    <link rel="icon" href="logo.ico" type="image/x-icon">
+    <style>
+        /* ==================== 变量定义（与博客主站一致） ==================== */
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --link-color: #0066cc;
+            --link-hover: #0052a3;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --sidebar-bg: #fafafa;
+            --hover-bg: #f0f0f0;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --link-color: #66b3ff;
+            --link-hover: #99ccff;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --sidebar-bg: #252525;
+            --hover-bg: #3a3a3a;
+        }
+
+        /* ==================== 基础重置 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            width: 100%;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--link-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        /* OC 展示区（左右布局） */
+        .oc-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* 左侧角色列表 */
+        .oc-sidebar {
+            flex: 1;
+            min-width: 240px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 20px 0;
+            height: fit-content;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .sidebar-title {
+            padding: 0 20px 15px 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .oc-card-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            margin: 4px 12px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--sidebar-bg);
+            border: 1px solid transparent;
+        }
+
+        .oc-card-item:hover {
+            background-color: var(--hover-bg);
+            transform: translateX(3px);
+        }
+
+        .oc-card-item.active {
+            background-color: var(--link-color);
+            color: white;
+            border-color: var(--link-color);
+        }
+
+        .oc-card-item.active .oc-card-name {
+            color: white;
+        }
+
+        .oc-card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .oc-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 图片加载失败时显示的占位文字样式 */
+        .avatar-placeholder {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        .oc-card-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* 右侧详情 */
+        .oc-detail {
+            flex: 3;
+            min-width: 280px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .detail-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .detail-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-name h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .detail-name .detail-title {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 信息区块 */
+        .info-section {
+            margin-bottom: 28px;
+        }
+
+        .info-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            padding-left: 8px;
+            border-left: 4px solid var(--link-color);
+        }
+
+        .info-content {
+            background-color: var(--sidebar-bg);
+            padding: 16px 20px;
+            border-radius: 16px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--text-color);
+            min-width: 70px;
+        }
+
+        .info-value {
+            color: var(--text-secondary);
+        }
+
+        /* 设定图网格 */
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .image-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 12px var(--shadow);
+            border-color: var(--link-color);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+        }
+
+        .image-caption {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--sidebar-bg);
+        }
+
+        /* 空状态提示 */
+        .empty-placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 滚动条 */
+        .oc-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .oc-sidebar::-webkit-scrollbar-track {
+            background: var(--border-color);
+            border-radius: 8px;
+        }
+        .oc-sidebar::-webkit-scrollbar-thumb {
+            background: var(--link-color);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .oc-container {
+                flex-direction: column;
+            }
+            .oc-sidebar {
+                max-height: none;
+            }
+            .detail-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .nav-links {
+                gap: 1rem;
+            }
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">OC设定集</a>
+            <div class="nav-links">
+                <a href="https://kaylincloudink.github.io/BiogOther.github.io/index.html">返回上一页</a>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="oc-container">
+            <aside class="oc-sidebar">
+                <div class="sidebar-title">📖 角色名录</div>
+                <div id="oc-list-container"></div>
+            </aside>
+            <section class="oc-detail" id="oc-detail">
+                <div class="empty-placeholder">✨ 请从左侧选择一个角色 ✨</div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Kaylin Cloudink. 保留所有权利. OC设定展示页，未经允许不可随意使用本页面内的所有内容及图片！</p>
+    </footer>
+
+    <script>
+        // ============================================================
+        // OC 数据定义区域 ———— 请在此处修改/添加您的原创角色信息
+        // 注意：头像和设定图支持本地相对路径（如 "oc/images/xxx.png"）或网络URL
+        // ============================================================
+        const ocData = [
+            {
+                id: 1,
+                name: "Kaylin",
+                title: "主设定/自设",
+                avatar: "images/kaylin_head.png",
+                basicInfo: {
+                    "年龄": "17",
+                    "性别": "🚹",
+                    "种族": "北大湖松霖玊狼",
+                    "生日": "04/22"
+                },
+                personality: "这里填写角色的性格特点，例如：冷静、温柔、充满好奇心……",
+                background: "这里填写角色的背景故事、经历、重要事件等。",
+                extra: "额外补充信息（可选）",
+                images: [
+                    { url: "https://via.placeholder.com/300?text=设定图1", caption: "全身立绘" },
+                    { url: "images/ocimageskaylin_dualview.jpg", caption: "双视图" }
+                ]
+            },
+            {
+                id: 2,
+                name: "角色B",
+                title: "第二个角色",
+                avatar: "https://via.placeholder.com/100?text=OC-B",
+                basicInfo: {
+                    "年龄": "??",
+                    "性别": "??",
+                    "职业": "待定"
+                },
+                personality: "角色的性格描述。",
+                background: "背景故事。",
+                extra: "",
+                images: []
+            }
+        ];
+
+        let currentOCId = null;
+        const ocListContainer = document.getElementById('oc-list-container');
+        const ocDetailContainer = document.getElementById('oc-detail');
+
+        // 辅助函数：防止XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // 判断一个字符串是否为有效的图片路径（支持网络URL、绝对路径、相对路径）
+        function isImagePath(str) {
+            if (!str || typeof str !== 'string') return false;
+            // 网络URL
+            if (str.startsWith('http://') || str.startsWith('https://')) return true;
+            // 绝对路径
+            if (str.startsWith('/')) return true;
+            // 相对路径：包含常见图片扩展名 或 包含路径分隔符（如 folder/name.png）
+            if (/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(str)) return true;
+            if (str.includes('/')) return true;
+            return false;
+        }
+
+        // 生成头像HTML（统一处理，避免onerror破坏DOM）
+        function getAvatarHtml(avatarValue, altName) {
+            if (isImagePath(avatarValue)) {
+                // 图片路径：使用img标签，并设置onerror替换为占位符
+                return `<img src="${avatarValue}" alt="${altName}" 
+                         onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span class=\'avatar-placeholder\'>🧑</span>';">`;
+            } else {
+                // 纯文本或emoji
+                return `<span class="avatar-placeholder">${avatarValue || '🧑'}</span>`;
+            }
+        }
+
+        // 渲染左侧卡片列表
+        function renderSidebar() {
+            if (!ocData.length) {
+                ocListContainer.innerHTML = '<div class="empty-placeholder" style="padding:20px">暂无角色，请在 ocData 中添加数据</div>';
+                return;
+            }
+            let html = '';
+            ocData.forEach(oc => {
+                const activeClass = (currentOCId === oc.id) ? 'active' : '';
+                const avatarHtml = getAvatarHtml(oc.avatar, oc.name);
+                html += `
+                    <div class="oc-card-item ${activeClass}" data-id="${oc.id}">
+                        <div class="oc-card-avatar">${avatarHtml}</div>
+                        <div class="oc-card-name">${escapeHtml(oc.name)}</div>
+                    </div>
+                `;
+            });
+            ocListContainer.innerHTML = html;
+            // 绑定点击事件
+            document.querySelectorAll('.oc-card-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const id = parseInt(item.getAttribute('data-id'));
+                    if (!isNaN(id)) selectOCById(id);
+                });
+            });
+        }
+
+        // 渲染设定图区域
+        function renderImagesSection(images) {
+            if (!images || images.length === 0) {
+                return `<div class="info-content">暂无设定图</div>`;
+            }
+            let imagesHtml = '<div class="images-grid">';
+            for (let img of images) {
+                let url = '';
+                let caption = '';
+                if (typeof img === 'string') {
+                    url = img;
+                    caption = '';
+                } else {
+                    url = img.url || '';
+                    caption = img.caption ? escapeHtml(img.caption) : '';
+                }
+                if (!url) continue;
+                imagesHtml += `
+                    <div class="image-card" onclick="window.open('${url}', '_blank')">
+                        <img src="${url}" alt="${caption || '设定图'}" loading="lazy" onerror="this.src='https://via.placeholder.com/300?text=加载失败'">
+                        ${caption ? `<div class="image-caption">${caption}</div>` : ''}
+                    </div>
+                `;
+            }
+            imagesHtml += '</div>';
+            return imagesHtml;
+        }
+
+        // 渲染右侧详情
+        function renderDetail(oc) {
+            if (!oc) {
+                ocDetailContainer.innerHTML = '<div class="empty-placeholder">✨ 请从左侧选择一个角色 ✨</div>';
+                return;
+            }
+            const avatarHtml = getAvatarHtml(oc.avatar, oc.name);
+
+            // 基本信息
+            let basicInfoHtml = '';
+            if (oc.basicInfo && Object.keys(oc.basicInfo).length > 0) {
+                basicInfoHtml = '<div class="info-grid">';
+                for (const [key, value] of Object.entries(oc.basicInfo)) {
+                    basicInfoHtml += `
+                        <div class="info-item">
+                            <span class="info-label">${escapeHtml(key)}：</span>
+                            <span class="info-value">${escapeHtml(value)}</span>
+                        </div>
+                    `;
+                }
+                basicInfoHtml += '</div>';
+            } else {
+                basicInfoHtml = '<div class="info-content">暂无基本信息</div>';
+            }
+
+            const personalityHtml = oc.personality ? `<div class="info-content">${escapeHtml(oc.personality)}</div>` : '<div class="info-content">未填写</div>';
+            const backgroundHtml = oc.background ? `<div class="info-content">${escapeHtml(oc.background)}</div>` : '<div class="info-content">未填写</div>';
+            const extraHtml = oc.extra ? `<div class="info-content">${escapeHtml(oc.extra)}</div>` : '';
+            const imagesHtml = renderImagesSection(oc.images);
+
+            const detailHtml = `
+                <div class="detail-header">
+                    <div class="detail-avatar">${avatarHtml}</div>
+                    <div class="detail-name">
+                        <h2>${escapeHtml(oc.name)}</h2>
+                        ${oc.title ? `<div class="detail-title">${escapeHtml(oc.title)}</div>` : ''}
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>📋 基本资料</h3>
+                    ${basicInfoHtml}
+                </div>
+                <div class="info-section">
+                    <h3>💭 性格</h3>
+                    ${personalityHtml}
+                </div>
+                <div class="info-section">
+                    <h3>📖 背景故事</h3>
+                    ${backgroundHtml}
+                </div>
+                ${extraHtml ? `<div class="info-section"><h3>✨ 其他</h3>${extraHtml}</div>` : ''}
+                <div class="info-section">
+                    <h3>🎨 设定图</h3>
+                    ${imagesHtml}
+                </div>
+            `;
+            ocDetailContainer.innerHTML = detailHtml;
+        }
+
+        function selectOCById(id) {
+            const selected = ocData.find(oc => oc.id === id);
+            if (selected) {
+                currentOCId = id;
+                renderSidebar();  // 重新渲染侧边栏以高亮当前项
+                renderDetail(selected);
+            }
+        }
+
+        function init() {
+            if (ocData.length > 0) {
+                currentOCId = ocData[0].id;
+                renderSidebar();
+                renderDetail(ocData[0]);
+            } else {
+                renderSidebar();
+                ocDetailContainer.innerHTML = '<div class="empty-placeholder">📭 暂无角色数据，请在 ocData 中添加内容</div>';
+            }
+        }
+
+        // 主题切换
+        function getCurrentTheme() { return localStorage.getItem('theme') || 'light'; }
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const current = getCurrentTheme();
+            setTheme(current === 'light' ? 'dark' : 'light');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme(getCurrentTheme());
+            init();
+        });
+    </script>
+</body>
+</html>
