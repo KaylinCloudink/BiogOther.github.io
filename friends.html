@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Kaylin博客 · 友邻小站</title>
+    <link rel="icon" href="logo.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --link-color: #0066cc;
+            --link-hover: #0052a3;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --accent-bg: #f0f7ff;
+            --btn-bg: #0066cc;
+            --btn-hover: #0052a3;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --link-color: #66b3ff;
+            --link-hover: #99ccff;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --accent-bg: #1e2a3a;
+            --btn-bg: #66b3ff;
+            --btn-hover: #99ccff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--link-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        /* 页面头部 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(120deg, var(--link-color), #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+        }
+
+        /* 友情链接列表 */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 每个链接卡片 */
+        .friend-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .friend-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px var(--shadow);
+            border-color: var(--link-color);
+        }
+
+        /* 左侧头像区域 */
+        .friend-avatar {
+            flex-shrink: 0;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 右侧内容区域 */
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-color);
+        }
+
+        .friend-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        /* 点击前往按钮 */
+        .friend-btn {
+            display: inline-block;
+            background-color: var(--btn-bg);
+            color: white;
+            padding: 6px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.1s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .friend-btn:hover {
+            background-color: var(--btn-hover);
+            transform: scale(0.98);
+        }
+
+        /* 空状态提示 */
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        footer {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 560px) {
+            .friend-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .friend-info {
+                text-align: center;
+            }
+            .friend-avatar {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Kaylin博客</a>
+            <div class="nav-links">
+                <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/">首页</a>
+                <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/articles.html">文章列表</a>
+                <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/tools.html">工具</a>
+                <a href="index.html" class="active">其他页面</a> 
+                <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/about.html">关于我</a>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-header">
+            <h1>🔗 友情链接</h1>
+            <p>推荐一些有趣的小站和伙伴，点击按钮即可前往</p>
+        </div>
+
+        <div id="links-container" class="links-list">
+            <!-- 动态渲染友情链接卡片 -->
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Kaylin Cloudink. 保留所有权利. 友邻链接 | 欢迎交换</p>
+    </footer>
+
+    <script>
+        // ============================================================
+        // 友情链接数据配置区域 ———— 请在此处修改/添加您的链接信息
+        // 每个链接对象包含以下字段：
+        //   id: 唯一标识（可选）
+        //   title: 网站名称/标题
+        //   description: 简短描述（可选）
+        //   avatar: 头像图片路径（支持本地相对路径或网络URL，如 "images/avatar1.png"）
+        //   url: 点击前往的链接地址（站外请以 http:// 或 https:// 开头）
+        // ============================================================
+        const linksData = [
+            {
+                id: 1,
+                title: "溟濩Bilibili主页",
+                description: "认识好久好久的朋友了，画画很棒！！",
+                avatar: "images/MH文件已加识别码.jpg",   
+                url: "https://space.bilibili.com/1215919843?spm_id_from=333.1387.follow.user_card.click"
+            },
+            {
+                id: 2,
+                title: "2",
+                description: "描述2",
+                avatar: "images/link_avatar2.png",
+                url: "https://example.com/siteB"
+            },
+            {
+                id: 3,
+                title: "3",
+                description: "描述",
+                avatar: "images/link_avatar3.png",
+                url: "https://example.com/tools"
+            }
+            // 添加更多链接：复制上方对象，以逗号分隔，修改相应字段即可
+        ];
+
+        // 获取容器元素
+        const container = document.getElementById('links-container');
+
+        // 辅助函数：防止XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // 渲染友情链接列表
+        function renderLinks() {
+            if (!linksData.length) {
+                container.innerHTML = '<div class="empty-message">📭 暂无友情链接，请在 linksData 中添加数据</div>';
+                return;
+            }
+
+            let html = '';
+            linksData.forEach(link => {
+                const safeTitle = escapeHtml(link.title);
+                const safeDesc = escapeHtml(link.description || '');
+                const safeUrl = escapeHtml(link.url);
+                // 头像处理：如果路径为空或无效，显示默认占位符
+                let avatarHtml = '';
+                if (link.avatar) {
+                    avatarHtml = `<img src="${link.avatar}" alt="${safeTitle}" onerror="this.onerror=null; this.parentElement.innerHTML='🔗';">`;
+                } else {
+                    avatarHtml = '<span style="font-size:2rem;">🔗</span>';
+                }
+
+                html += `
+                    <div class="friend-card" data-id="${link.id}">
+                        <div class="friend-avatar">
+                            ${avatarHtml}
+                        </div>
+                        <div class="friend-info">
+                            <div class="friend-title">${safeTitle}</div>
+                            <div class="friend-desc">${safeDesc}</div>
+                            <a href="${safeUrl}" class="friend-btn" target="_blank" rel="noopener noreferrer">点击前往 →</a>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // 主题切换（与博客主站一致）
+        function getCurrentTheme() { return localStorage.getItem('theme') || 'light'; }
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const current = getCurrentTheme();
+            setTheme(current === 'light' ? 'dark' : 'light');
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme(getCurrentTheme());
+            renderLinks();
+        });
+    </script>
+</body>
+</html>
