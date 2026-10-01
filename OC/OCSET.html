@@ -12,7 +12,7 @@
      · 角色数据在页面底部 <script> 的 ocData 数组里，直接改那里
      · 布局：左侧角色名录卡片 + 右侧详情大卡片（移动端上下堆叠）
      · 点击设定图会打开 Lightbox 大图查看（支持左右切换）
-     · 注意：本页面在 bento/ 子目录，图片路径需带 ../OC/ 前缀
+     · 注意：本页面与 images/ 同处 OC/ 目录，图片路径直接使用 images/ 前缀
      ================================================================ */
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -180,12 +180,12 @@
 
   <!-- ========== 顶部导航 ========== -->
   <header>
-    <a href="index.html" class="logo">Kaylin<i>Other</i></a>
+    <a href="../index.html" class="logo">Kaylin<i>Other</i></a>
     <nav>
       <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/">首页</a>
       <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/articles.html">文章列表</a>
       <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/tools.html">工具</a>
-      <a href="index.html" class="on">其他页面</a>
+      <a href="../index.html" class="on">其他页面</a>
       <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/about.html">关于我</a>
     </nav>
   </header>
@@ -208,7 +208,7 @@
     </div>
 
     <!-- 返回导航格 -->
-    <a href="index.html" style="text-decoration:none; color:inherit;">
+    <a href="../index.html" style="text-decoration:none; color:inherit;">
       <div class="cell c2">
         <div class="lab">BACK · 返回</div>
         <div style="font-size:16px; font-weight:700; margin-top:auto;">🏠 回到其他页面导航</div>
@@ -254,14 +254,14 @@
   //   basicInfo: 基本信息键值对（可自行增减字段，会渲染成小格）
   //   personality / background / extra: 三个介绍区块
   //   images: 设定图数组 {url, caption}
-  // 注意：本页面在 bento/ 子目录，图片路径需带 ../OC/ 前缀
+  // 注意：本页面与 images/ 同处 OC/ 目录，图片路径直接使用 images/ 前缀
   // ============================================================
   const ocData = [
     {
       id: 1,
       name: "Kaylin Cloudink（云墨）",
       title: "主设定/自设",
-      avatar: "../OC/images/文件已有标识码1.jpg",
+      avatar: "images/文件已有标识码1.jpg",
       basicInfo: {
         "性别": "Male",
         "种族": "北大湖松霖玊狼",
@@ -271,7 +271,7 @@
       background: "北大湖松霖玊狼一族，但似乎“同时存在于”两个世界（？）有时候会彻底睡死（跟真死了一样）但有时候很正常",
       extra: "喜欢在草原散步，独自穿越密林，最喜欢在下雨天睡觉（（（",
       images: [
-        { url: "../OC/images/文件已有标识码2.jpg", caption: "双视图" }
+        { url: "images/文件已有标识码2.jpg", caption: "双视图" }
       ]
     }
     // 添加更多角色：复制上方对象，以逗号分隔，修改相应字段即可
