@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OC设定集 - Kaylin设定收集区</title>
+<link rel="icon" href="../logo.ico" type="image/x-icon">
+<style>
+  /* ================================================================
+     便当盒(Bento)风格 —— OC设定集
+     ----------------------------------------------------------------
+     · 角色数据在页面底部 <script> 的 ocData 数组里，直接改那里
+     · 布局：左侧角色名录卡片 + 右侧详情大卡片（移动端上下堆叠）
+     · 点击设定图会打开 Lightbox 大图查看（支持左右切换）
+     · 注意：本页面在 bento/ 子目录，图片路径需带 ../OC/ 前缀
+     ================================================================ */
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029;
+    --ink:#e9ecf2; --body:#c3c9d6; --muted:#8b93a3;
+    --line:#232837; --line-hi:#39415a;
+  }
+
+  body {
+    background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;
+  }
+
+  .wrap { max-width:1020px; margin:0 auto; padding:30px 24px 40px; }
+
+  header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+  .logo { font-size:19px; font-weight:800; text-decoration:none; color:var(--ink); }
+  .logo i { font-style:normal; background:linear-gradient(135deg,#3b82f6,#8b5cf6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  nav a { color:var(--muted); text-decoration:none; margin-left:22px; font-size:14px; }
+  nav a:hover { color:var(--ink); }
+
+  /* ---------- 顶部标题行（便当格） ---------- */
+  .bento { display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:134px; gap:14px; }
+  .cell {
+    background:var(--card); border:1px solid var(--line); border-radius:20px;
+    padding:20px; overflow:hidden; position:relative;
+    min-width:0; overflow-wrap:anywhere;
+    height:100%;
+    transition:transform .18s, border-color .18s;
+    display:flex; flex-direction:column;
+  }
+  .cell:hover { transform:translateY(-3px); border-color:var(--line-hi); box-shadow:0 12px 28px rgba(0,0,0,.35); }
+  .c2 { grid-column:span 2; } .r2 { grid-row:span 2; }
+  .lab { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+  .grad-blue { background:linear-gradient(135deg,#2563eb,#7c3aed); border:none; }
+  .grad-blue .lab { color:rgba(255,255,255,.75); }
+  .hero-cell { justify-content:flex-end; }
+  .hero-cell h1 { font-size:clamp(22px,3vw,30px); font-weight:800; line-height:1.25; color:#fff; }
+  .hero-cell p  { color:rgba(255,255,255,.85); font-size:14px; margin-top:8px; }
+  .big-num { font-size:30px; font-weight:800; margin-top:auto; line-height:1.15; }
+  .big-num small { font-size:13px; color:var(--muted); font-weight:normal; margin-left:8px; }
+  .emoji { font-size:20px; margin-bottom:2px; line-height:1; }
+
+  /* ---------- 主布局：左名录 + 右详情（移动端单列） ---------- */
+  .oc-layout { display:grid; grid-template-columns:300px 1fr; gap:14px; margin-top:14px; align-items:start; }
+  @media (max-width:820px) {
+    .bento { grid-template-columns:repeat(2,1fr); }
+    .c2 { grid-column:span 2; }
+    .oc-layout { grid-template-columns:1fr; }
+    nav a { margin-left:14px; }
+  }
+
+  /* 卡片通用外观（与格子一致，但高度随内容） */
+  .panel {
+    background:var(--card); border:1px solid var(--line); border-radius:20px;
+    padding:20px; min-width:0; overflow-wrap:anywhere;
+    animation:rise .6s cubic-bezier(.22,.61,.36,1) .15s both;
+  }
+
+  /* ---------- 左侧：角色名录 ---------- */
+  .sidebar-title { font-size:15px; font-weight:700; padding-bottom:12px; margin-bottom:10px; border-bottom:1px solid var(--line); }
+  /* 角色条目：圆头像 + 名字，点击切换详情 */
+  .oc-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 12px; margin-bottom:8px;
+    border-radius:14px; cursor:pointer;
+    background:var(--card2); border:1px solid var(--line);
+    transition:transform .18s, border-color .18s, background .18s;
+  }
+  .oc-item:hover { transform:translateX(3px); border-color:var(--line-hi); }
+  .oc-item.active { background:linear-gradient(135deg,#2563eb,#7c3aed); border-color:transparent; }
+  .oc-item.active .oc-name { color:#fff; }
+  .oc-item .oc-ava {
+    width:44px; height:44px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    border:2px solid rgba(255,255,255,.25); background:var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .oc-item .oc-ava img { width:100%; height:100%; object-fit:cover; }
+  .oc-item .oc-name { font-size:14px; font-weight:600; min-width:0; overflow-wrap:anywhere; }
+
+  /* ---------- 右侧：角色详情 ---------- */
+  .detail-header { display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  .detail-ava {
+    width:96px; height:96px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    border:3px solid rgba(255,255,255,.25); background:var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:40px;
+  }
+  .detail-ava img { width:100%; height:100%; object-fit:cover; }
+  .detail-ava-lg { font-size:40px; }
+  .detail-name h2 { font-size:24px; font-weight:800; }
+  .detail-name .dtitle { color:var(--muted); font-size:13px; margin-top:4px; }
+
+  /* 基本信息小格：一行一个属性，字段名可自行增减（数据在 ocData.basicInfo） */
+  .info-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; margin-top:10px; }
+  .info-item { background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .info-item .ilab { font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  .info-item .ival { font-size:15px; font-weight:700; margin-top:4px; overflow-wrap:anywhere; }
+
+  /* 三个介绍区块：性格 / 背景 / 杂谈 */
+  .sec-lab { margin-top:20px; }
+  .sec-box { background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:14px 16px; color:var(--body); font-size:14px; line-height:1.8; margin-top:8px; }
+
+  /* ---------- 设定图网格 ---------- */
+  .images-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px; margin-top:10px; }
+  .image-card { background:var(--card2); border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer; transition:transform .18s, border-color .18s; }
+  .image-card:hover { transform:translateY(-4px); border-color:var(--line-hi); }
+  .image-card img { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }
+  .image-caption { padding:8px 12px; font-size:12px; color:var(--muted); text-align:center; border-top:1px solid var(--line); }
+
+  /* ---------- Lightbox 大图查看器 ---------- */
+  .lightbox {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.92); z-index:1000;
+    justify-content:center; align-items:center; flex-direction:column;
+  }
+  .lightbox.active { display:flex; }
+  .lightbox-img { max-width:90%; max-height:80%; object-fit:contain; border-radius:12px; }
+  .lightbox-caption { color:#fff; margin-top:16px; font-size:14px; }
+  .lightbox-close { position:absolute; top:14px; right:34px; color:#fff; font-size:40px; cursor:pointer; }
+  .lightbox-close:hover { color:#ff6b6b; }
+  .lightbox-nav {
+    position:absolute; top:50%; transform:translateY(-50%);
+    color:#fff; font-size:44px; cursor:pointer; padding:20px; user-select:none;
+  }
+  .lightbox-nav:hover { color:#a5b8ff; }
+  .lightbox-prev { left:12px; }
+  .lightbox-next { right:12px; }
+
+  .empty-tip { color:var(--muted); text-align:center; padding:30px; font-style:italic; }
+  .foot { text-align:center; color:var(--muted); font-size:12px; margin-top:40px; }
+  .foot p { margin:2px 0; }
+
+  /* ================================================================
+     动画效果：rise 载入浮现 / drift 渐变流动 / 悬浮投影
+     ================================================================ */
+  @keyframes rise {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:none; }
+  }
+  @keyframes drift {
+    from { background-position:0% 0%; }
+    to   { background-position:100% 100%; }
+  }
+  .bento > *, .panel { animation:rise .55s cubic-bezier(.22,.61,.36,1) both; }
+  .bento > *:nth-child(2) { animation-delay:.07s; }
+  .bento > *:nth-child(3) { animation-delay:.14s; }
+  .bento > *:nth-child(4) { animation-delay:.21s; }
+  .grad-blue { background-size:180% 180%; }
+  .bento > .grad-blue {
+    animation:rise .55s cubic-bezier(.22,.61,.36,1) both, drift 10s ease-in-out infinite alternate;
+  }
+  /* 详情内容每次切换角色时重新浮现 */
+  .detail-anim { animation:rise .4s cubic-bezier(.22,.61,.36,1) both; }
+  @media (prefers-reduced-motion: reduce) {
+    .bento > *, .bento > .grad-blue, .panel, .detail-anim { animation:none; }
+    .cell, .cell:hover { transition:none; transform:none; box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ========== 顶部导航 ========== -->
+  <header>
+    <a href="index.html" class="logo">Kaylin<i>Other</i></a>
+    <nav>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/">首页</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/articles.html">文章列表</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/tools.html">工具</a>
+      <a href="index.html" class="on">其他页面</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/about.html">关于我</a>
+    </nav>
+  </header>
+
+  <!-- ========== 标题行便当格 ========== -->
+  <div class="bento">
+    <div class="cell c2 r2 grad-blue hero-cell">
+      <div>
+        <div class="lab" style="margin-bottom:10px;">OC SETTINGS · 设定收集</div>
+        <h1>✨ OC设定集</h1>
+        <p>存放着各种设定</p>
+      </div>
+    </div>
+
+    <!-- 角色统计（JS 同步更新） -->
+    <div class="cell">
+      <div class="emoji">🧑‍🎨</div>
+      <div class="lab">收录角色</div>
+      <div class="big-num" id="oc-count">-<small>位</small></div>
+    </div>
+
+    <!-- 返回导航格 -->
+    <a href="index.html" style="text-decoration:none; color:inherit;">
+      <div class="cell c2">
+        <div class="lab">BACK · 返回</div>
+        <div style="font-size:16px; font-weight:700; margin-top:auto;">🏠 回到其他页面导航</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- ========== 主布局：左名录 + 右详情 ========== -->
+  <div class="oc-layout">
+    <!-- 左侧角色名录 -->
+    <aside class="panel">
+      <div class="sidebar-title">📖 角色名录</div>
+      <div id="oc-list"></div>
+    </aside>
+
+    <!-- 右侧角色详情（JS 渲染） -->
+    <section class="panel" id="oc-detail">
+      <div class="empty-tip">✨ 请从左侧选择一个角色 ✨</div>
+    </section>
+  </div>
+
+  <!-- ========== Lightbox 大图查看器 ========== -->
+  <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
+    <span class="lightbox-nav lightbox-prev" onclick="changeImage(-1, event)">&#10094;</span>
+    <span class="lightbox-nav lightbox-next" onclick="changeImage(1, event)">&#10095;</span>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="查看大图">
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+  </div>
+
+  <!-- ========== 页脚（文字与原站一致） ========== -->
+  <footer class="foot">
+    <p>&copy; 2026 Kaylin Cloudink. 保留所有权利. OC设定展示页，未经允许不可随意使用本页面内的所有内容及图片！</p>
+    <p>网站内的图片已经Hex加上识别码！！请不要随意保存！！</p>
+  </footer>
+</div>
+
+<script>
+  // ============================================================
+  // OC数据定义区域 —— 请在此处修改/添加您的原创角色信息
+  // 字段说明：
+  //   avatar: 角色头像（图片路径或 emoji）
+  //   basicInfo: 基本信息键值对（可自行增减字段，会渲染成小格）
+  //   personality / background / extra: 三个介绍区块
+  //   images: 设定图数组 {url, caption}
+  // 注意：本页面在 bento/ 子目录，图片路径需带 ../OC/ 前缀
+  // ============================================================
+  const ocData = [
+    {
+      id: 1,
+      name: "Kaylin Cloudink（云墨）",
+      title: "主设定/自设",
+      avatar: "../OC/images/文件已有标识码1.jpg",
+      basicInfo: {
+        "性别": "Male",
+        "种族": "北大湖松霖玊狼",
+        "生日": "04/22"
+      },
+      personality: "社恐，平时话比较少，有时候对于朋友的话题不知道怎么回答",
+      background: "北大湖松霖玊狼一族，但似乎“同时存在于”两个世界（？）有时候会彻底睡死（跟真死了一样）但有时候很正常",
+      extra: "喜欢在草原散步，独自穿越密林，最喜欢在下雨天睡觉（（（",
+      images: [
+        { url: "../OC/images/文件已有标识码2.jpg", caption: "双视图" }
+      ]
+    }
+    // 添加更多角色：复制上方对象，以逗号分隔，修改相应字段即可
+  ];
+
+  // 全局状态：当前选中角色 / Lightbox 当前图片
+  let currentOCId = null;
+  let currentImageIndex = 0;
+  let currentImagesList = [];
+
+  const ocListEl = document.getElementById('oc-list');
+  const ocDetailEl = document.getElementById('oc-detail');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCaption = document.getElementById('lightbox-caption');
+
+  // 辅助：HTML转义防XSS
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[m];
+    });
+  }
+
+  // 辅助：判断是否为图片路径（否则按 emoji/文字显示）
+  function isImagePath(str) {
+    if (!str || typeof str !== 'string') return false;
+    if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('/')) return true;
+    if (/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)$/i.test(str)) return true;
+    return str.includes('/');
+  }
+
+  // 渲染左侧角色名录
+  function renderSidebar() {
+    const count = document.getElementById('oc-count');
+    if (count) count.innerHTML = ocData.length + '<small>位</small>';
+
+    if (!ocData.length) {
+      ocListEl.innerHTML = '<div class="empty-tip">暂无角色，请在 ocData 中添加数据</div>';
+      return;
+    }
+    ocListEl.innerHTML = ocData.map(oc => {
+      const ava = isImagePath(oc.avatar)
+        ? `<img src="${escapeHtml(oc.avatar)}" alt="${escapeHtml(oc.name)}">`
+        : `${oc.avatar || '🧑'}`;
+      return `
+        <div class="oc-item ${currentOCId === oc.id ? 'active' : ''}" data-id="${oc.id}" role="button" tabindex="0">
+          <div class="oc-ava">${ava}</div>
+          <div class="oc-name">${escapeHtml(oc.name)}</div>
+        </div>`;
+    }).join('');
+
+    // 绑定点击/回车选择事件
+    ocListEl.querySelectorAll('.oc-item').forEach(item => {
+      item.addEventListener('click', () => selectOC(Number(item.dataset.id)));
+      item.addEventListener('keydown', e => { if (e.key === 'Enter') selectOC(Number(item.dataset.id)); });
+    });
+  }
+
+  // 选中角色并渲染右侧详情
+  function selectOC(id) {
+    currentOCId = id;
+    const oc = ocData.find(o => o.id === id);
+    if (!oc) return;
+    renderSidebar(); // 刷新左侧高亮
+
+    // 基本信息键值对 → 一排小格
+    const infoItems = Object.entries(oc.basicInfo || {}).map(([k, v]) => `
+      <div class="info-item">
+        <div class="ilab">${escapeHtml(k)}</div>
+        <div class="ival">${escapeHtml(v)}</div>
+      </div>`).join('');
+
+    // 设定图网格（点击打开 Lightbox）
+    currentImagesList = oc.images || [];
+    const imgs = currentImagesList.map((img, i) => {
+      const url = typeof img === 'string' ? img : img.url;
+      const cap = typeof img === 'string' ? '' : (img.caption || '');
+      return `
+        <div class="image-card" data-index="${i}">
+          <img src="${escapeHtml(url)}" alt="${escapeHtml(cap)}">
+          <div class="image-caption">${escapeHtml(cap)}</div>
+        </div>`;
+    }).join('');
+
+    ocDetailEl.innerHTML = `
+      <div class="detail-anim">
+        <div class="detail-header">
+          <div class="detail-ava">
+            ${isImagePath(oc.avatar)
+              ? `<img src="${escapeHtml(oc.avatar)}" alt="${escapeHtml(oc.name)}">`
+              : `<span class="detail-ava-lg">${oc.avatar || '🧑'}</span>`}
+          </div>
+          <div class="detail-name">
+            <h2>${escapeHtml(oc.name)}</h2>
+            <div class="dtitle">${escapeHtml(oc.title || '')}</div>
+          </div>
+        </div>
+
+        <div class="lab">BASIC · 基本信息</div>
+        <div class="info-grid">${infoItems}</div>
+
+        <div class="lab sec-lab">PERSONALITY · 性格</div>
+        <div class="sec-box">${escapeHtml(oc.personality || '待补充……')}</div>
+
+        <div class="lab sec-lab">BACKGROUND · 背景故事</div>
+        <div class="sec-box">${escapeHtml(oc.background || '待补充……')}</div>
+
+        ${oc.extra ? `
+          <div class="lab sec-lab">MORE · 杂谈</div>
+          <div class="sec-box">${escapeHtml(oc.extra)}</div>` : ''}
+
+        ${currentImagesList.length ? `
+          <div class="lab sec-lab">GALLERY · 设定图</div>
+          <div class="images-grid">${imgs}</div>` : ''}
+      </div>`;
+
+    // 绑定设定图点击 → 打开 Lightbox
+    ocDetailEl.querySelectorAll('.image-card').forEach(card => {
+      card.addEventListener('click', () => openLightbox(Number(card.dataset.index)));
+    });
+  }
+
+  // ---------- Lightbox 逻辑 ----------
+  function openLightbox(index) {
+    currentImageIndex = index;
+    const img = currentImagesList[index];
+    const url = typeof img === 'string' ? img : img.url;
+    const cap = typeof img === 'string' ? '' : (img.caption || '');
+    lightboxImg.src = url;
+    lightboxCaption.textContent = cap;
+    lightbox.classList.add('active');
+  }
+  // 点击遮罩空白处关闭；点击前后箭头切换（阻止冒泡避免误关）
+  function closeLightbox(event) {
+    if (event.target === lightbox || event.target.className === 'lightbox-close') {
+      lightbox.classList.remove('active');
+    }
+  }
+  function changeImage(step, event) {
+    event.stopPropagation();
+    if (!currentImagesList.length) return;
+    currentImageIndex = (currentImageIndex + step + currentImagesList.length) % currentImagesList.length;
+    const img = currentImagesList[currentImageIndex];
+    lightboxImg.src = typeof img === 'string' ? img : img.url;
+    lightboxCaption.textContent = typeof img === 'string' ? '' : (img.caption || '');
+  }
+  // Esc 键关闭
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') lightbox.classList.remove('active');
+  });
+
+  // 页面加载时初始化：渲染名录并默认选中第一个角色
+  document.addEventListener('DOMContentLoaded', () => {
+    renderSidebar();
+    if (ocData.length) selectOC(ocData[0].id);
+  });
+</script>
+</body>
+</html>
