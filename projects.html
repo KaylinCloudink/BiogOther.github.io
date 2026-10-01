@@ -1,459 +1,284 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>项目进程图 · 开发路线</title>
-    <link rel="icon" href="logo.ico" type="image/x-icon">
-    <style>
-        /* ==================== 变量定义（与博客主站一致） ==================== */
-        :root {
-            --bg-color: #f5f5f5;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --text-secondary: #666666;
-            --border-color: #e0e0e0;
-            --link-color: #0066cc;
-            --link-hover: #0052a3;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --accent-bg: #f0f7ff;
-            --progress-bg: #e0e0e0;
-            --progress-fill: linear-gradient(90deg, #0066cc, #3b82f6);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目进程图 · 开发路线</title>
+<link rel="icon" href="../logo.ico" type="image/x-icon">
+<style>
+  /* ================================================================
+     便当盒(Bento)风格 —— 项目进程页
+     ----------------------------------------------------------------
+     · 项目数据在页面底部 <script> 的 projectsData 数组里，直接改那里
+     · 卡片由 JS 渲染进 .bento 网格（容器 display:contents 穿透）
+     · 进度条在载入后从 0 平滑填充到目标百分比（fillBars 函数）
+     ================================================================ */
 
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --card-bg: #2d2d2d;
-            --text-color: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --border-color: #404040;
-            --link-color: #66b3ff;
-            --link-hover: #99ccff;
-            --shadow: rgba(0, 0, 0, 0.3);
-            --accent-bg: #1e2a3a;
-            --progress-bg: #404040;
-            --progress-fill: linear-gradient(90deg, #66b3ff, #60a5fa);
-        }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  :root {
+    --bg:#0f1115; --card:#171a21; --card2:#1c2029;
+    --ink:#e9ecf2; --muted:#8b93a3;
+    --line:#232837; --line-hi:#39415a;
+  }
 
-        html {
-            height: 100%;
-        }
+  body {
+    background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;
+  }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            transition: background-color 0.3s, color 0.3s;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+  .wrap { max-width:1020px; margin:0 auto; padding:30px 24px 40px; }
 
-        main {
-            flex: 1;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            width: 100%;
-        }
+  header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:28px; }
+  .logo { font-size:19px; font-weight:800; text-decoration:none; color:var(--ink); }
+  .logo i { font-style:normal; background:linear-gradient(135deg,#3b82f6,#8b5cf6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  nav a { color:var(--muted); text-decoration:none; margin-left:22px; font-size:14px; }
+  nav a:hover { color:var(--ink); }
+  nav a.on { color:#a5b8ff; }
 
-        /* 导航栏 */
-        nav {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px var(--shadow);
-        }
+  .bento { display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:134px; gap:14px; }
+  .cell {
+    background:var(--card); border:1px solid var(--line); border-radius:20px;
+    padding:20px; overflow:hidden; position:relative;
+    min-width:0; overflow-wrap:anywhere;
+    height:100%;
+    transition:transform .18s, border-color .18s;
+    display:flex; flex-direction:column;
+  }
+  .cell:hover { transform:translateY(-3px); border-color:var(--line-hi); box-shadow:0 12px 28px rgba(0,0,0,.35); }
+  .c2 { grid-column:span 2; } .r2 { grid-row:span 2; }
+  .lab { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+  .grad-teal { background:linear-gradient(135deg,#0d9488,#06b6d4); border:none; }
+  .grad-teal .lab { color:rgba(255,255,255,.75); }
+  .hero-cell { justify-content:flex-end; }
+  .hero-cell h1 { font-size:clamp(22px,3vw,30px); font-weight:800; line-height:1.25; color:#fff; }
+  .hero-cell p  { color:rgba(255,255,255,.85); font-size:14px; margin-top:8px; }
+  .big-num { font-size:34px; font-weight:800; margin-top:auto; line-height:1.15; }
+  .big-num small { font-size:13px; color:var(--muted); font-weight:normal; margin-left:8px; }
+  .emoji { font-size:20px; margin-bottom:2px; line-height:1; }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  /* JS 渲染容器：display:contents 让子元素直接成为网格项 */
+  #projects-container { display:contents; }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-color);
-            text-decoration: none;
-        }
+  /* ---------- 项目卡片（JS 渲染，占 2 列 2 行） ---------- */
+  .pcard .pname { font-size:17px; font-weight:700; margin-top:8px; }
+  .pcard .pdesc { color:var(--muted); font-size:13px; line-height:1.65; margin-top:6px; flex:1; }
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
+  /* 状态徽章（颜色与原站语义一致：完成绿 / 进行蓝 / 计划橙 / 暂停灰） */
+  .status-badge {
+    display:inline-block; align-self:flex-start;
+    padding:3px 12px; border-radius:12px;
+    font-size:11px; font-weight:600; letter-spacing:.06em;
+    background:var(--card2); color:#a5b8ff; border:1px solid var(--line);
+  }
+  .status-badge.completed { background:#10b981; color:#fff; border:none; }
+  .status-badge.in-progress { background:#2563eb; color:#fff; border:none; }
+  .status-badge.planned { background:#f59e0b; color:#fff; border:none; }
+  .status-badge.paused { background:#6b7280; color:#fff; border:none; }
 
-        .nav-links a {
-            color: var(--text-color);
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s;
-        }
+  /* ---------- 进度条：载入后从 0 平滑填充 ---------- */
+  .progress-info {
+    display:flex; justify-content:space-between;
+    font-size:12px; color:var(--muted); margin:12px 0 6px;
+  }
+  .progress-info b { color:var(--ink); }
+  .progress-track { background:var(--card2); border-radius:20px; height:8px; overflow:hidden; }
+  .progress-fill {
+    width:0;                                  /* 初始 0，由 JS 填充到目标值触发过渡 */
+    height:100%; border-radius:20px;
+    background:linear-gradient(90deg,#0d9488,#06b6d4);
+    transition:width 1s cubic-bezier(.22,.61,.36,1) .35s;
+  }
+  .pupdate { margin-top:10px; font-size:11px; color:var(--muted); }
 
-        .nav-links a:hover {
-            color: var(--link-color);
-        }
+  .empty-cell { justify-content:center; align-items:center; text-align:center; color:var(--muted); }
+  .foot { text-align:center; color:var(--muted); font-size:12px; margin-top:40px; }
 
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 8px 16px;
-            cursor: pointer;
-            font-size: 1rem;
-            color: var(--text-color);
-            transition: all 0.3s;
-        }
+  @media (max-width:820px) {
+    .bento { grid-template-columns:repeat(2,1fr); }
+    .c2 { grid-column:span 2; }
+    nav a { margin-left:14px; }
+  }
+  @media (max-width:480px) {
+    .bento { grid-auto-rows:minmax(140px, auto); }
+  }
 
-        .theme-toggle:hover {
-            background-color: var(--border-color);
-        }
-
-        /* 页面头部 */
-        .page-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .page-header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            background: linear-gradient(120deg, var(--link-color), #8b5cf6);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .page-header p {
-            color: var(--text-secondary);
-        }
-
-        /* 项目列表容器 */
-        .projects-container {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* 项目卡片 */
-        .project-card {
-            background-color: var(--card-bg);
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            padding: 24px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px var(--shadow);
-        }
-
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px var(--shadow);
-            border-color: var(--link-color);
-        }
-
-        /* 项目头部：名称 + 状态标签 */
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .project-name {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background-color: var(--accent-bg);
-            color: var(--link-color);
-            border: 1px solid var(--border-color);
-        }
-
-        /* 状态颜色扩展（用户可根据需要添加更多样式） */
-        .status-badge.completed {
-            background-color: #10b981;
-            color: white;
-            border: none;
-        }
-        .status-badge.in-progress {
-            background-color: var(--link-color);
-            color: white;
-            border: none;
-        }
-        .status-badge.planned {
-            background-color: #f59e0b;
-            color: white;
-            border: none;
-        }
-        .status-badge.paused {
-            background-color: #6b7280;
-            color: white;
-            border: none;
-        }
-
-        /* 项目描述 */
-        .project-desc {
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        /* 进度条区域 */
-        .progress-section {
-            margin-top: 16px;
-        }
-
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-        }
-
-        .progress-bar-container {
-            background-color: var(--progress-bg);
-            border-radius: 20px;
-            height: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            width: 0%;
-            height: 100%;
-            background: var(--progress-fill);
-            border-radius: 20px;
-            transition: width 0.5s ease;
-        }
-
-        /* 最后更新日期 */
-        .project-footer {
-            margin-top: 16px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-align: right;
-            border-top: 1px dashed var(--border-color);
-            padding-top: 12px;
-        }
-
-        /* 空状态 */
-        .empty-message {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-            background: var(--card-bg);
-            border-radius: 24px;
-            border: 1px solid var(--border-color);
-        }
-
-        footer {
-            background-color: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 30px 20px;
-            text-align: center;
-        }
-
-        footer p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 640px) {
-            .project-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .project-name {
-                font-size: 1.2rem;
-            }
-        }
-    </style>
+  /* ================================================================
+     动画效果：rise 载入浮现 / drift 渐变流动 / 悬浮投影
+     ================================================================ */
+  @keyframes rise {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:none; }
+  }
+  @keyframes drift {
+    from { background-position:0% 0%; }
+    to   { background-position:100% 100%; }
+  }
+  .bento > * { animation:rise .55s cubic-bezier(.22,.61,.36,1) both; }
+  .bento > *:nth-child(2)  { animation-delay:.07s; }
+  .bento > *:nth-child(3)  { animation-delay:.14s; }
+  .bento > *:nth-child(4)  { animation-delay:.21s; }
+  .bento > *:nth-child(5)  { animation-delay:.28s; }
+  .grad-teal { background-size:180% 180%; }
+  .bento > .grad-teal {
+    animation:rise .55s cubic-bezier(.22,.61,.36,1) both, drift 10s ease-in-out infinite alternate;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bento > *, .bento > .grad-teal { animation:none; }
+    .cell, .cell:hover { transition:none; transform:none; box-shadow:none; }
+    .progress-fill { transition:none; }
+  }
+</style>
 </head>
 <body>
+<div class="wrap">
+
+  <!-- ========== 顶部导航 ========== -->
+  <header>
+    <a href="index.html" class="logo">Kaylin<i>Other</i></a>
     <nav>
-        <div class="nav-container">
-            <a href="index.html" class="logo">OC设定集</a>
-            <div class="nav-links">
-                <a href="https://kaylincloudink.github.io/BiogOther.github.io/index.html">返回上一页</a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
-                    <span id="theme-icon">🌙</span>
-                </button>
-            </div>
-        </div>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/">首页</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/articles.html">文章列表</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/tools.html">工具</a>
+      <a href="index.html" class="on">其他页面</a>
+      <a href="https://kaylincloudink.github.io/KaylinBlog.github.io/about.html">关于我</a>
     </nav>
-    
-    <main>
-        <div class="page-header">
-            <h1>📊 项目进程图</h1>
-            <p>追踪当前进行中的各项任务与开发进度</p>
-        </div>
+  </header>
 
-        <div id="projects-container" class="projects-container">
-            <!-- 项目卡片将动态渲染到这里 -->
-        </div>
-    </main>
+  <!-- ================================================================
+       便当盒主体：标题大格 + JS 渲染的项目卡片
+       ================================================================ -->
+  <div class="bento">
 
-    <footer>
-        <p>&copy; 2026 Kaylin Cloudink. 保留所有权利. 项目进程图 | 持续更新中</p>
-    </footer>
+    <!-- 标题大格 -->
+    <div class="cell c2 r2 grad-teal hero-cell">
+      <div>
+        <div class="lab" style="margin-bottom:10px;">PROJECTS · 开发路线</div>
+        <h1>📊 项目进程图</h1>
+        <p>追踪当前进行中的各项任务与开发进度</p>
+      </div>
+    </div>
 
-    <script>
-        // ============================================================
-        // 项目数据配置区域 ———— 请在此处修改/添加您的项目信息
-        // 每个项目对象包含以下字段：
-        //   id: 唯一标识（数字或字符串，可选）
-        //   name: 项目名称
-        //   description: 项目简要描述
-        //   status: 状态 (可选值: 'planned', 'in-progress', 'completed', 'paused' 或自定义文本)
-        //   progress: 进度百分比 (0-100)
-        //   lastUpdate: 最后更新日期（字符串，可选）
-        // ============================================================
-        const projectsData = [
-            {
-                id: 1,
-                name: "Blog完善计划",
-                description: "正在进行中......完善博客的功能和内容，增加更多文章和工具。",
-                status: "in-progress",
-                progress: 55,
-                lastUpdate: "2026-04-19"
-            },
-            {
-                id: 2,
-                name: "OC设定集页面",
-                description: "设定展示页面，支持多角色切换。",
-                status: "in-progress",
-                progress: 15,
-                lastUpdate: "2026-04-19"
-            },
-            {
-                id: 3,
-                name: "117报时台工具",
-                description: "基于国家授时中心NTP的精准报时页面，每10秒预报未来时刻。",
-                status: "in-progress",
-                progress: 10,
-                lastUpdate: "2026-04-16"
-            },
-            // 添加更多项目：复制上方对象，以逗号分隔，修改相应字段即可
-        ];
+    <!-- 项目卡片由 JS 渲染到此处 -->
+    <div id="projects-container"></div>
 
-        // 获取容器元素
-        const container = document.getElementById('projects-container');
+    <!-- 统计格：项目总数（JS 同步更新） -->
+    <div class="cell">
+      <div class="emoji">🗂️</div>
+      <div class="lab">进行中项目</div>
+      <div class="big-num" id="project-count">-<small>个</small></div>
+    </div>
+  </div>
 
-        // 辅助：转义HTML防止XSS
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+  <!-- ========== 页脚（文字与原站一致） ========== -->
+  <footer class="foot">&copy; 2026 Kaylin Cloudink. 保留所有权利. 项目进程图 | 持续更新中</footer>
+</div>
 
-        // 根据状态文本返回对应的CSS类（用于不同颜色）
-        function getStatusClass(status) {
-            const statusMap = {
-                'planned': 'planned',
-                'in-progress': 'in-progress',
-                'completed': 'completed',
-                'paused': 'paused'
-            };
-            return statusMap[status] || '';
-        }
+<script>
+  // ============================================================
+  // 项目数据配置区域 ———— 请在此处修改/添加您的项目信息
+  // 字段：name 名称 / description 描述 / status 状态 / progress 进度 / lastUpdate 更新日期
+  // ============================================================
+  const projectsData = [
+    {
+      id: 1,
+      name: "Blog完善计划",
+      description: "正在进行中......完善博客的功能和内容，增加更多文章和工具。",
+      status: "in-progress",
+      progress: 55,
+      lastUpdate: "2026-04-19"
+    },
+    {
+      id: 2,
+      name: "OC设定集页面",
+      description: "设定展示页面，支持多角色切换。",
+      status: "in-progress",
+      progress: 15,
+      lastUpdate: "2026-04-19"
+    },
+    {
+      id: 3,
+      name: "117报时台工具",
+      description: "基于国家授时中心NTP的精准报时页面，每10秒预报未来时刻。",
+      status: "in-progress",
+      progress: 10,
+      lastUpdate: "2026-04-16"
+    }
+    // 添加更多项目：复制上方对象，以逗号分隔，修改相应字段即可
+  ];
 
-        // 状态文本中文化
-        function getStatusText(status) {
-            const statusTextMap = {
-                'planned': '📋 计划中',
-                'in-progress': '⚙️ 进行中',
-                'completed': '✅ 已完成',
-                'paused': '⏸️ 暂停'
-            };
-            return statusTextMap[status] || status;
-        }
+  // 获取容器元素
+  const container = document.getElementById('projects-container');
 
-        // 渲染项目列表
-        function renderProjects() {
-            if (!projectsData.length) {
-                container.innerHTML = '<div class="empty-message">📭 暂无项目数据，请在 projectsData 中添加内容</div>';
-                return;
-            }
+  // 辅助：转义HTML防止XSS
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      if (m === '"') return '&quot;';
+      return m;
+    });
+  }
 
-            let html = '';
-            projectsData.forEach(proj => {
-                const safeName = escapeHtml(proj.name);
-                const safeDesc = escapeHtml(proj.description);
-                const statusClass = getStatusClass(proj.status);
-                const statusText = getStatusText(proj.status);
-                const progress = Math.min(100, Math.max(0, proj.progress));
-                const lastUpdate = proj.lastUpdate ? escapeHtml(proj.lastUpdate) : '未知';
+  // 状态文本中文化（与原站一致）
+  function getStatusText(status) {
+    const statusTextMap = {
+      'planned': '📋 计划中',
+      'in-progress': '⚙️ 进行中',
+      'completed': '✅ 已完成',
+      'paused': '⏸️ 暂停'
+    };
+    return statusTextMap[status] || status;
+  }
 
-                html += `
-                    <div class="project-card" data-id="${proj.id}">
-                        <div class="project-header">
-                            <div class="project-name">${safeName}</div>
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="project-desc">${safeDesc}</div>
-                        <div class="progress-section">
-                            <div class="progress-info">
-                                <span>📈 完成进度</span>
-                                <span>${progress}%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-fill" style="width: ${progress}%;"></div>
-                            </div>
-                        </div>
-                        <div class="project-footer">
-                            🕒 最后更新：${lastUpdate}
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
+  // 渲染项目列表（每个项目 = 一张 2列×2行 的便当卡）
+  function renderProjects() {
+    if (!projectsData.length) {
+      container.innerHTML = '<div class="cell c2 r2 empty-cell">📭 暂无项目数据，请在 projectsData 中添加内容</div>';
+      return;
+    }
 
-        // 主题切换（与博客主站一致）
-        function getCurrentTheme() { return localStorage.getItem('theme') || 'light'; }
-        function setTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-            const icon = document.getElementById('theme-icon');
-            if (icon) icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-        function toggleTheme() {
-            const current = getCurrentTheme();
-            setTheme(current === 'light' ? 'dark' : 'light');
-        }
+    let html = '';
+    projectsData.forEach(proj => {
+      const safeName = escapeHtml(proj.name);
+      const safeDesc = escapeHtml(proj.description);
+      const statusText = getStatusText(proj.status);
+      const progress = Math.min(100, Math.max(0, proj.progress));
+      const lastUpdate = proj.lastUpdate ? escapeHtml(proj.lastUpdate) : '未知';
 
-        // 页面加载时初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            setTheme(getCurrentTheme());
-            renderProjects();
+      html += `
+        <div class="cell c2 r2 pcard">
+          <span class="status-badge ${escapeHtml(proj.status)}">${statusText}</span>
+          <div class="pname">${safeName}</div>
+          <p class="pdesc">${safeDesc}</p>
+          <div class="progress-info"><span>📈 完成进度</span><b>${progress}%</b></div>
+          <div class="progress-track">
+            <div class="progress-fill" data-progress="${progress}"></div>
+          </div>
+          <div class="pupdate">🕒 最后更新：${lastUpdate}</div>
+        </div>`;
+    });
+    container.innerHTML = html;
+
+    // 同步更新统计格数字
+    const count = document.getElementById('project-count');
+    if (count) count.innerHTML = projectsData.length + '<small>个</small>';
+
+    // 触发进度条填充动画：先等一帧让初始 width:0 生效，再写入目标值
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.progress-fill').forEach(bar => {
+          bar.style.width = bar.dataset.progress + '%';
         });
-    </script>
+      });
+    });
+  }
+
+  // 页面加载时初始化
+  document.addEventListener('DOMContentLoaded', () => renderProjects());
+</script>
 </body>
 </html>
